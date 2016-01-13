@@ -38,6 +38,30 @@ $app->get('/getScore/:id', function ($id) use($app) {
   }
 });
 
+$app->post('/updateScore', function() use($app) {
+    $allPostVars = $app->request->post();
+    $score = $allPostVars['score'];
+    $id = $allPostVars['id'];
+
+    try {
+      $sth = $app->db->prepare("UPDATE students
+          SET score = :score
+          WHERE student_id = :id");
+
+      $sth->bindParam(':score', $score, PDO::PARAM_INT);
+      $sth->bindParam(':id', $id, PDO::PARAM_INT);
+      $sth->execute();
+
+      $app->response->setStatus(200);
+      $app->response()->headers->set('Content-Type', 'application/json');
+      echo json_encode(array("status" => "success", "code" => 1));
+
+    } catch(PDOException $e) {
+        $app->response()->setStatus(404);
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+});
+
 $app->run();
 
 ?>
